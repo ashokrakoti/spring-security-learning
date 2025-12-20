@@ -1,3 +1,10 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+/checkstyle-idea.xml
+/compiler.xml
+/encodings.xml
+/jarRepositories.xml
+/misc.xml
+/spring-security-learning.iml
+/vcs.xml
