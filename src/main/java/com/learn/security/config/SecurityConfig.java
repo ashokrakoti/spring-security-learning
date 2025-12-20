@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.List;
+
 @Configuration
 public class SecurityConfig {
 
@@ -45,18 +47,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("user")
-                .password("{noop}user123")
-                .roles("USER")
-                .build();
+    public UserDetailsService userDetailsService(SecurityUsersProperties props) {
+        List<UserDetails> userDetails = props.getUsers().stream()
+                .map(user -> User.withUsername(user.getUsername())
+                        .password("{noop}" + user.getPassword())
+                        .roles(user.getRoles().split(","))
+                        .build()).toList();
 
-        UserDetails admin = User.withUsername("admin")
-                .password("{noop}admin123")
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
+        return new InMemoryUserDetailsManager(userDetails);
     }
 
 }
