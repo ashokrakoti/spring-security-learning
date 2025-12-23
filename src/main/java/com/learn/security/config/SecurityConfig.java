@@ -1,8 +1,14 @@
 package com.learn.security.config;
 
+import com.learn.security.jwt.JwtAuthenticationFilter;
+import com.learn.security.service.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,58 +17,58 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.List;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-//Basic auth version with logs and filters
-//    @Bean
-//    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .addFilterBefore((servletRequest, servletResponse, filterChain) -> {
-//                    System.out.println(">>> Before Security Filters");
-//                    filterChain.doFilter(servletRequest, servletResponse);
-//                    System.out.println("<<< After Security Filters");
-//                }, SecurityContextHolderFilter.class)
-//                .csrf(csrf -> csrf.disable())
-//                .logout(logout -> logout.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                .requestMatchers("/public/**").permitAll()
-//                .anyRequest().authenticated()
-//        )
-//                .httpBasic();
-//
-//        return http.build();
-//    }
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService
+    ) {
+        return new JwtAuthenticationFilter(jwtService, userDetailsService);
+    }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.sessionManagement(session -> session.
-                        sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/public/**").permitAll()
-                    .requestMatchers("/api/admin", "/api/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/hello").hasRole("USER")
-                    .anyRequest().authenticated()
-            ).httpBasic();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception{
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
         return http.build();
     }
 
     @Bean
-    public UserDetailsService userDetailsService(SecurityUsersProperties props) {
-        UserDetails user = User.withUsername("user")
-                .password("{bcrypt}$2a$10$Bfo7vCeHz7uwprqzjg/L8OZRUt18zq5zr06Z.XQYhjoVoNK4ci9IG")
+    UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        UserDetails user = User.builder()
+                .username("ashok")
+                .password(encoder.encode("secret"))
                 .roles("USER")
                 .build();
 
-        UserDetails admin = User.withUsername("admin")
-                .password("{bcrypt}$2a$10$YTckMDoECCsBT9ukAusRPukefsD/aMJUw6LOvgG4TlTnU4yI7FNim")
-                .roles("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(user, admin);
+        return new InMemoryUserDetailsManager(user);
     }
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
