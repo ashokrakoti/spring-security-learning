@@ -1,3 +1,4 @@
+/*
 package com.learn.security.jwt;
 
 import com.learn.security.service.JwtService;
@@ -26,7 +27,8 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    /**
+    */
+/**
      * Jwt token comes from header like Authorization: Bearer <token>
      *     we need to read this and extract the token and validate for each request.
      *     that is why we are using a filter of type OncePerRequestFilter
@@ -35,7 +37,8 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
      * @param filterChain
      * @throws ServletException
      * @throws IOException
-     */
+     *//*
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -81,3 +84,4 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+*/

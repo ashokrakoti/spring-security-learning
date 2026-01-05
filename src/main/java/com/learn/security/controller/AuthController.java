@@ -1,3 +1,4 @@
+/*
 package com.learn.security.controller;
 
 import com.learn.security.dto.LoginRequest;
@@ -17,7 +18,7 @@ import org.springframework.security.core.Authentication;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-     private final AuthenticationManager authenticationManager;
+   private final AuthenticationManager authenticationManager;
      private final JwtService jwtService;
      private final UserDetailsService userDetailsService;
 
@@ -54,5 +55,7 @@ public class AuthController {
                  )
          );
 
-     }
+     }*//*
+
 }
+*/
